@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANVEX — Number Guesser</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #080810;
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #f0f5ff;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      padding: 2rem;
+    }
+
+    .game-panel {
+      background: #0e101a;
+      border: 2px solid #00f0ff;
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      box-shadow: 
+        0 0 40px rgba(0, 240, 255, 0.25),
+        inset 0 0 30px rgba(0, 240, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #00f0ff, #ff00aa, #00f0ff);
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      text-align: center;
+      color: #00f0ff;
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.8);
+      letter-spacing: 0.15em;
+      margin-bottom: 0.3rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #7a8499;
+      letter-spacing: 0.2em;
+      margin-bottom: 2rem;
+      text-transform: uppercase;
+    }
+
+    #message {
+      text-align: center;
+      font-size: 1.05rem;
+      min-height: 3rem;
+      margin-bottom: 1.5rem;
+      color: #c8d0e0;
+      line-height: 1.4;
+      transition: color 0.3s ease;
+    }
+
+    #message.win {
+      color: #00f0ff;
+      text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+    }
+
+    #message.low {
+      color: #66ccff;
+    }
+
+    #message.high {
+      color: #ff9966;
+    }
+
+    .input-group {
+      margin-bottom: 1.2rem;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      background: #0a0c14;
+      border: 2px solid #1a2030;
+      border-radius: 8px;
+      color: #f0f5ff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.2rem;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #00f0ff;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    }
+
+    input[type="number"]::placeholder {
+      color: #4a5568;
+    }
+
+    /* Hide number spinners */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.95rem;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.25s;
+      margin-bottom: 0.8rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00d4e8, #00a0b8);
+      color: #080810;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid #ff00aa;
+      color: #ff00aa;
+      box-shadow: 0 0 12px rgba(255, 0, 170, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 0, 170, 0.1);
+      box-shadow: 0 0 20px rgba(255, 0, 170, 0.4);
+    }
+
+    #attempts {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #7a8499;
+      margin-top: 0.5rem;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 1.8rem;
+      font-size: 0.65rem;
+      color: #4a5568;
+      letter-spacing: 0.15em;
+    }
+
+    .footer span {
+      color: #00f0ff;
+    }
+
+    /* Win confetti-ish particles (simple) */
+    .win-state .game-panel {
+      border-color: #ff00aa;
+      box-shadow: 
+        0 0 50px rgba(255, 0, 170, 0.35),
+        inset 0 0 30px rgba(255, 0, 170, 0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="game-panel" id="panel">
+      <div class="logo">ANVEX</div>
+      <div class="subtitle">Number Guesser</div>
+
+      <p id="message">I'm thinking of a number between 1 and 100...</p>
+
+      <div class="input-group">
+        <input type="number" id="guess" min="1" max="100" placeholder="Enter 1 – 100" autofocus>
+      </div>
+
+      <button class="btn btn-primary" id="submit">GUESS</button>
+      <button class="btn btn-secondary" id="restart" style="display:none;">PLAY AGAIN</button>
+
+      <p id="attempts">Attempts: 0</p>
+    </div>
+
+    <div class="footer">
+      <span>ANVEX</span> — BUILD • CODE • CREATE
+    </div>
+  </div>
+
+  <script>
+    const messageEl = document.getElementById('message');
+    const guessInput = document.getElementById('guess');
+    const submitBtn = document.getElementById('submit');
+    const restartBtn = document.getElementById('restart');
+    const attemptsEl = document.getElementById('attempts');
+    const panel = document.getElementById('panel');
+
+    let secret;
+    let attempts;
+    let gameOver;
+
+    function initGame() {
+      secret = Math.floor(Math.random() * 100) + 1;
+      attempts = 0;
+      gameOver = false;
+      messageEl.textContent = "I'm thinking of a number between 1 and 100...";
+      messageEl.className = '';
+      attemptsEl.textContent = 'Attempts: 0';
+      guessInput.value = '';
+      guessInput.disabled = false;
+      submitBtn.style.display = 'block';
+      restartBtn.style.display = 'none';
+      panel.classList.remove('win-state');
+      guessInput.focus();
+      // console.log('Secret:', secret); // for debugging
+    }
+
+    function checkGuess() {
+      if (gameOver) return;
+
+      const guess = Number(guessInput.value);
+
+      if (!guess || guess < 1 || guess > 100) {
+        messageEl.textContent = 'Please enter a number from 1 to 100';
+        messageEl.className = '';
+        return;
+      }
+
+      attempts++;
+      attemptsEl.textContent = `Attempts: ${attempts}`;
+
+      if (guess === secret) {
+        messageEl.textContent = `Correct! You got it in ${attempts} tries 🎉`;
+        messageEl.className = 'win';
+        gameOver = true;
+        guessInput.disabled = true;
+        submitBtn.style.display = 'none';
+        restartBtn.style.display = 'block';
+        panel.classList.add('win-state');
+      } else if (guess < secret) {
+        messageEl.textContent = 'Too low... try higher ↗';
+        messageEl.className = 'low';
+      } else {
+        messageEl.textContent = 'Too high... try lower ↘';
+        messageEl.className = 'high';
+      }
+
+      guessInput.value = '';
+      guessInput.focus();
+    }
+
+    submitBtn.addEventListener('click', checkGuess);
+    restartBtn.addEventListener('click', initGame);
+
+    guessInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkGuess();
+    });
+
+    // Start
+    initGame();
+  </script>
+</body>
+</html>
